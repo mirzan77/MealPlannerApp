@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meal Planner App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-md">
+    <h1 class="text-2xl font-bold text-center mb-4">Meal Planner</h1>
+
+    <!-- Input Form -->
+    <form id="mealForm" class="space-y-4">
+      <div>
+        <label class="block font-semibold">Dietary Preferences:</label>
+        <input type="text" id="preferences" class="w-full border rounded p-2" placeholder="e.g., vegetarian, keto" />
+      </div>
+      <div>
+        <label class="block font-semibold">Allergies:</label>
+        <input type="text" id="allergies" class="w-full border rounded p-2" placeholder="e.g., peanuts, dairy" />
+      </div>
+      <div>
+        <label class="block font-semibold">Available Ingredients:</label>
+        <input type="text" id="ingredients" class="w-full border rounded p-2" placeholder="comma-separated" />
+      </div>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Suggest Meals
+      </button>
+    </form>
+
+    <!-- Results -->
+    <div id="results" class="mt-6 hidden">
+      <h2 class="text-xl font-semibold mb-2">Suggested Meals:</h2>
+      <ul id="mealList" class="list-disc list-inside mb-4"></ul>
+      <h2 class="text-xl font-semibold mb-2">Shopping List:</h2>
+      <ul id="shoppingList" class="list-disc list-inside"></ul>
+    </div>
+  </div>
+
+  <script>
+    const mealForm = document.getElementById('mealForm');
+    const resultsDiv = document.getElementById('results');
+    const mealList = document.getElementById('mealList');
+    const shoppingList = document.getElementById('shoppingList');
+
+    mealForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const preferences = document.getElementById('preferences').value.trim().toLowerCase();
+      const allergies = document.getElementById('allergies').value.trim().toLowerCase().split(',').map(a => a.trim());
+      const ingredients = document.getElementById('ingredients').value.trim().toLowerCase().split(',').map(i => i.trim());
+
+      // Sample meals (in real case, fetch from API or DB)
+      const mealDB = [
+        { name: "Veggie Stir Fry", ingredients: ["broccoli", "carrot", "soy sauce"], tags: ["vegetarian"] },
+        { name: "Chicken Salad", ingredients: ["chicken", "lettuce", "olive oil"], tags: ["keto"] },
+        { name: "Peanut Butter Toast", ingredients: ["bread", "peanut butter"], tags: ["vegetarian"] },
+      ];
+
+      const suggestedMeals = mealDB.filter(meal => {
+        const hasAllergen = meal.ingredients.some(ing => allergies.includes(ing));
+        const matchesPreference = !preferences || meal.tags.includes(preferences);
+        const canMake = meal.ingredients.every(ing => ingredients.includes(ing));
+        return !hasAllergen && matchesPreference && canMake;
+      });
+
+      mealList.innerHTML = '';
+      shoppingList.innerHTML = '';
+
+      if (suggestedMeals.length > 0) {
+        resultsDiv.classList.remove('hidden');
+        suggestedMeals.forEach(meal => {
+          const li = document.createElement('li');
+          li.textContent = meal.name;
+          mealList.appendChild(li);
+
+          meal.ingredients.forEach(ing => {
+            if (!ingredients.includes(ing)) {
+              const item = document.createElement('li');
+              item.textContent = ing;
+              shoppingList.appendChild(item);
+            }
+          });
+        });
+      } else {
+        resultsDiv.classList.remove('hidden');
+        mealList.innerHTML = '<li>No suitable meals found.</li>';
+      }
+    });
+  </script>
+</body>
+</html>
